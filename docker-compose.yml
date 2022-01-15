@@ -1,0 +1,19 @@
+version: "3.9"
+services:
+  test-db:
+    image: mysql:8.0
+    container_name: test-db
+    restart: always
+    tty: true
+    environment:
+      MYSQL_DATABASE: stock_data_storage
+      MYSQL_ROOT_PASSWORD: root 
+      # MYSQL_USER: user
+      # MYSQL_PASSWORD: root
+    ports: 
+      - "3305:3306"
+    volumes:
+      - ./test-db:/docker-entrypoint-initdb.d
+      - test-db-vol:/var/lib/mysql
+volumes:
+  test-db-vol:
