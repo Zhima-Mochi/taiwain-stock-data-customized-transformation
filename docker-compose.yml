@@ -8,10 +8,8 @@ services:
     environment:
       MYSQL_DATABASE: stock_data_storage
       MYSQL_ROOT_PASSWORD: root 
-      # MYSQL_USER: user
-      # MYSQL_PASSWORD: root
     ports: 
-      - "3305:3306"
+      - "3306:3306"
     volumes:
       - ./test-db:/docker-entrypoint-initdb.d
       - test-db-vol:/var/lib/mysql
