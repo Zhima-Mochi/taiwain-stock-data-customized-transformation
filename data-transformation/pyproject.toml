@@ -7,11 +7,14 @@ authors = ["Zhima-Mochi <yehgoter@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.8"
 SQLAlchemy = "1.4.31"
-databases = {extras = ["mysql"], version = "^0.5.5"}
 pandas = "^1.4.0"
 pydantic = "^1.9.0"
 pytest = "~=6.2"
 autopep8 = "^1.6.0"
+mysqlclient = "^2.1.0"
+pytest-asyncio = "^0.17.2"
+databases = {extras = ["aiomysql"], version = "^0.5.5"}
+aiomysql = "^0.0.22"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2"

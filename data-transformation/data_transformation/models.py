@@ -57,5 +57,5 @@ records = Table(
     Column('table_name', String(50), primary_key=True),
     Column('status', String(1)),
     Column('status_date', DateTime,
-           default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+           default=datetime.utcnow, onupdate=datetime.utcnow)
 )
