@@ -1,7 +1,7 @@
 from datetime import datetime
 import sqlalchemy
-from sqlalchemy import Column, Integer, String, Table, Time, Float, Date, DateTime
-from sqlalchemy.dialects.mysql import TINYINT
+from sqlalchemy import Column, Integer, String, Table, Float, Date, DateTime
+from sqlalchemy.dialects.mysql import TINYINT, TIME
 
 metadata = sqlalchemy.MetaData()
 
@@ -12,7 +12,7 @@ def create_sa_stock_data_table(table_name: str) -> Table:
         metadata,
         Column("data_date", Date, primary_key=True),
         Column("stock_id", String(6), primary_key=True),
-        Column("matching_time", Time(6), primary_key=True),
+        Column("matching_time", TIME(fsp=6), primary_key=True),
         Column("is_matching", TINYINT),
         Column("best_ask_tick_number", TINYINT),
         Column("best_bid_tick_number", TINYINT),
