@@ -51,4 +51,4 @@ async def test_query():
 async def test_pandas():
     async with get_test_database() as database_test:
         result = await database_test.fetch_all(query=select(stock_data_table))
-        print(pd.DataFrame([dict(row) for row in result]))
+        print(pd.DataFrame((dict(row) for row in result)))
