@@ -34,3 +34,33 @@ return_rate
 amihud_p
 amihud_m
 """
+
+import asyncio
+import logging
+from data_transformation.database import get_database
+from data_transformation.crud import get_dates_in_month, get_each_date_content_dataframe, get_table_content_dataframe, set_task_table_record_status
+from data_transformation.models import create_sa_stock_data_table
+
+
+def task(task_table_name):
+    try:
+        # create sqlalchemy table
+        task_sa_table = create_sa_stock_data_table(task_table_name)
+    except Exception as e:
+        logging.warning(e)
+
+    async def async_task():
+        async with get_database() as database:
+            await set_task_table_record_status(database, task_table_name, "0")
+            try:
+                data_dates = await get_dates_in_month(database, task_sa_table)
+                for data_date in data_dates:
+                    data = await get_each_date_content_dataframe(
+                        database, task_sa_table, data_date)
+                    print(data)
+                await set_task_table_record_status(database, task_table_name, "1")
+            except Exception as e:
+                await set_task_table_record_status(database, task_table_name, "0")
+                print(e)
+
+    return asyncio.run(async_task())

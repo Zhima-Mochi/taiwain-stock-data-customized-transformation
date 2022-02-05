@@ -5,12 +5,12 @@ from data_transformation.models import *
 from databases import Database
 import pytest
 import pandas as pd
+from data_transformation.crud import *
 
-DATABASE_URL = f"mysql+aiomysql://root:root@127.0.0.1/stock_data_storage"
 
-database_test = Database(DATABASE_URL)
+engine_test = sqlalchemy.create_engine(f"mysql://root:root@127.0.0.1/stock_data_storage")
 
-engine_test = sqlalchemy.create_engine(DATABASE_URL)
+database_test = Database(f"mysql+aiomysql://root:root@127.0.0.1/stock_data_storage")
 
 stock_data_table = create_sa_stock_data_table("stock_data_201503")
 
@@ -34,6 +34,7 @@ def event_loop():
 
 @pytest.mark.asyncio
 async def test_connection():
+    metadata.create_all(engine_test)
     async with get_test_database() as database_test:
         result = await database_test.fetch_all(query="show tables;")
         print(result)
@@ -52,3 +53,10 @@ async def test_pandas():
     async with get_test_database() as database_test:
         result = await database_test.fetch_all(query=select(stock_data_table))
         print(pd.DataFrame((dict(row) for row in result)))
+
+
+@pytest.mark.asyncio
+async def test_get_task_table_names():
+    async with get_test_database() as database_test:
+        result = await get_task_table_names(database_test)
+        print(result)
