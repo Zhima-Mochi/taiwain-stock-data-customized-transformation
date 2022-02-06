@@ -1,10 +1,9 @@
 import asyncio
-from functools import partial
 from data_transformation.crud import get_task_table_names
 from data_transformation.database import get_database, engine
 from data_transformation.models import metadata
 from data_transformation.utils import task
-from multiprocessing import Process, Manager, Pool
+from multiprocessing import Manager, Pool
 
 
 async def main():
@@ -21,3 +20,4 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
+

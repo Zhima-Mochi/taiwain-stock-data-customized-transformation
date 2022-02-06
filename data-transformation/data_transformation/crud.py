@@ -15,6 +15,13 @@ async def get_task_table_names(database: Database):
         ( b.status is null OR 
         b.status != '1');
         '''
+    stmt = '''
+        SELECT a.table_name FROM information_schema.tables a
+        LEFT JOIN records b ON
+        a.table_name = b. table_name
+        WHERE a.table_schema = 'stock_data_storage' AND
+        a.table_name like '%stock_data_%';
+        '''
     result = await database.fetch_all(query=stmt)
     return [res[0] for res in result]
 
