@@ -7,7 +7,8 @@ class Settings(BaseSettings):
     DATABASE_PORT: str = '3306'
     DATABASE_NAME: str
     DATABASE_USER: str
-    DATABASE_PASSWORD:str
+    DATABASE_PASSWORD: str
+    OUTPUT_PATH: str = './'
 
     class Config:
         env_file = ".env"
