@@ -1,8 +1,8 @@
 version: '3.9'
 services:
   main:
-    build: ./data-transformation
-    image: data-transformation
+    # build: ./data-transformation
+    image: zhima1mochi2/tw-stock-data-transformation
     # command: sleep infinity
     command: python main.py
     volumes:
