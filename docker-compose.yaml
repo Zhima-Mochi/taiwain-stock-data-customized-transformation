@@ -1,0 +1,11 @@
+version: '3.9'
+services:
+  main:
+    build: ./data-transformation
+    image: data-transformation
+    # command: sleep infinity
+    command: python main.py
+    volumes:
+      - ./CSV:/app/CSV
+    env_file:
+      - ./.env

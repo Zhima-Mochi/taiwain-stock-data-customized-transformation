@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime
 from data_transformation.crud import get_task_table_names
 from data_transformation.database import get_database, engine
 from data_transformation.models import metadata
@@ -15,9 +16,8 @@ async def main():
                 iter = pool.imap_unordered(
                     task, (task_table_name for task_table_name in task_table_names))
                 for val in iter:
-                    print(val)
+                    print(f"{datetime.now().ctime()}: {val}")
 
 
 if __name__ == '__main__':
     asyncio.run(main())
-

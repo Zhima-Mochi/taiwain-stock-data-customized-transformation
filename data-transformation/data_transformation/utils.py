@@ -54,6 +54,7 @@ amihud_m
 """
 
 
+from asyncio.log import logger
 from bisect import bisect_left, bisect_right
 import asyncio
 import logging
@@ -66,6 +67,9 @@ import numpy as np
 import datetime
 import os
 from pathlib import Path
+
+np.seterr(divide='ignore')
+
 stock_start_time = datetime.time(8, 30)
 stock_end_time = datetime.time(13, 30)
 
@@ -133,12 +137,16 @@ def task(task_table_name):
             try:
                 # data conversion date by date in month
                 data_dates = await get_dates_in_month(database, task_sa_table)
+                if len(data_dates) == 0:
+                    logger.warning(f"There is no row in {task_table_name}")
+                    return "No data: "+task_table_name
                 for data_date in data_dates:
                     data = await get_each_date_content_dataframe(
                         database, task_sa_table, data_date)
 
                     output_file_path = output_path / \
                         (task_table_name+'_'+data_date.strftime("%Y%m%d")+".csv")
+
                     if output_file_path.exists():
                         output_file_path.unlink()
 
@@ -292,7 +300,6 @@ def task(task_table_name):
                             required_columns), inplace=True)
                         stock_data.index.name = 'time'
                         # stock_data.replace(np.inf,np.nan,inplace=True)
-                        print(stock_data.columns.__len__())
                         stock_data.to_csv(
                             output_file_path, mode='a', header=not os.path.exists(output_file_path))
 
@@ -301,5 +308,6 @@ def task(task_table_name):
             except Exception as e:
                 # set current table status pending
                 await set_task_table_record_status(database, task_table_name, "0")
-                print(e)
+                return f"Error: {task_table_name} {e}"
+            return "Finish: "+task_table_name
     return asyncio.run(async_task())

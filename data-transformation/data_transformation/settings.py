@@ -1,4 +1,5 @@
 from pydantic import BaseSettings
+import pathlib
 
 
 class Settings(BaseSettings):
@@ -8,7 +9,7 @@ class Settings(BaseSettings):
     DATABASE_NAME: str
     DATABASE_USER: str
     DATABASE_PASSWORD: str
-    OUTPUT_PATH: str = './'
+    OUTPUT_PATH: str = pathlib.Path(__file__).parent.resolve()
 
     class Config:
         env_file = ".env"
