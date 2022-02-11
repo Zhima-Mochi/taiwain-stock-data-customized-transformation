@@ -67,7 +67,6 @@ import numpy as np
 import datetime
 import os
 from pathlib import Path
-
 np.seterr(divide='ignore')
 
 stock_start_time = datetime.time(8, 30)
@@ -157,9 +156,10 @@ def task(task_table_name):
                             data["stock_id"], stock_id)])
 
                         # cleaning
-                        # stock_data = stock_data[~(
-                        #     stock_data["matching_price"] == 0 | stock_data["the_best_bid_tick_price"] == 0 | stock_data["the_best_ask_tick_price"] == 0)]
+                        stock_data = stock_data.loc[~((stock_data["the_best_bid_tick_price"]
+                                                       == 0) & (stock_data["the_best_ask_tick_price"] == 0)), :]
 
+                        # combine data_date and matching_time to datetime type
                         stock_data["matching_time"] = pd.to_datetime([datetime.datetime.combine(
                             data_date, mt) for mt in stock_data["matching_time"]])
                         stock_data["time"] = stock_data["matching_time"].dt.ceil(
