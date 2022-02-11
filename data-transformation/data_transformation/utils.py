@@ -304,7 +304,6 @@ def task(task_table_name):
                         # stock_data.replace(np.inf,np.nan,inplace=True)
                         stock_data.to_csv(
                             output_file_path, mode='a', header=not os.path.exists(output_file_path))
-
                 # set current table status finished
                 await set_task_table_record_status(database, task_table_name, "1")
             except Exception as e:
