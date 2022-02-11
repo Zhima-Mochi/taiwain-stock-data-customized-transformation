@@ -57,5 +57,5 @@ records = Table(
     Column('table_name', String(50), primary_key=True),
     Column('status', String(1)),  # 1: finished, 0: pending
     Column('status_date', DateTime,
-           default=datetime.utcnow, onupdate=datetime.utcnow)
+           default=datetime.now, onupdate=datetime.now)
 )
