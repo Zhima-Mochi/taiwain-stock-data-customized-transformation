@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.log import logger
 from datetime import datetime
 from data_transformation.crud import get_task_table_names
 from data_transformation.database import get_database, engine
@@ -16,7 +17,7 @@ async def main():
                 iter = pool.imap_unordered(
                     task, (task_table_name for task_table_name in task_table_names))
                 for val in iter:
-                    print(f"{datetime.now().ctime()}: {val}")
+                    logger.info(f"{datetime.now().ctime()}: {val}")
 
 
 if __name__ == '__main__':
