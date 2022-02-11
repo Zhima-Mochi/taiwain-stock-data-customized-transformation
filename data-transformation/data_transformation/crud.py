@@ -1,3 +1,4 @@
+from asyncio.log import logger
 from aiomysql import IntegrityError
 from data_transformation.settings import Settings
 from databases import Database
@@ -10,14 +11,6 @@ settings = Settings()
 
 async def get_task_table_names(database: Database):
     stmt = '''
-        SELECT a.table_name FROM information_schema.tables a
-        LEFT JOIN records b ON
-        a.table_name = b. table_name
-        WHERE a.table_schema = 'stock_data_storage' AND
-        a.table_name like '%stock_data_%' AND
-        ( b.status is null OR 
-        b.status != '1');
-        ''' if settings.DEBUG==False else '''
         SELECT a.table_name FROM information_schema.tables a
         LEFT JOIN records b ON
         a.table_name = b. table_name
@@ -45,6 +38,6 @@ async def get_each_date_content_dataframe(database: Database, task_sa_table: Tab
 
 async def set_task_table_record_status(database: Database, task_table_name: str, status: str):
     try:
-        await database.execute(query=records.insert().values(table_name=task_table_name, status=status))
+        await database.execute(query=records.insert().values(table_name=task_table_name, status=status, status_date=datetime.now()))
     except IntegrityError as e:
-        await database.execute(query=records.update().where(records.c.table_name == task_table_name).values(status=status))
+        await database.execute(query=records.update().where(records.c.table_name == task_table_name).values(status=status, status_date=datetime.now()))
