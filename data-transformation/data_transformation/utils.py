@@ -212,19 +212,20 @@ def task(task_table_name):
                         stock_data_minute["total_match_accum_volume"] = stock_data.groupby("time")[
                             "matching_volume"].sum()
 
+                        is_matching = data["is_matching"] == 1
                         stock_data_minute["buyer_side_init_match_count"] = stock_data.groupby(
-                            "time").apply(lambda data:  (data["indicator_q"] > 0).sum())
+                            "time").apply(lambda data:  ((data["indicator_q"] > 0) & is_matching).sum())
                         stock_data_minute["buyer_side_init_match_accum_volume"] = stock_data.groupby(
-                            "time").apply(lambda data: data["matching_volume"][data["indicator_q"] > 0].sum())
+                            "time").apply(lambda data: data["matching_volume"][(data["indicator_q"] > 0) & is_matching].sum())
 
                         stock_data_minute["seller_side_init_match_count"] = stock_data.groupby(
-                            "time").apply(lambda data:  (data["indicator_q"] < 0).sum())
+                            "time").apply(lambda data:  ((data["indicator_q"] < 0) & is_matching).sum())
                         stock_data_minute["seller_side_init_match_accum_volume"] = stock_data.groupby(
-                            "time").apply(lambda data: data["matching_volume"][data["indicator_q"] < 0].sum())
+                            "time").apply(lambda data: data["matching_volume"][(data["indicator_q"] < 0) & is_matching].sum())
                         stock_data_minute["accumulated_matching_price_multiply_volume"] = stock_data.groupby(
-                            "time").apply(lambda data: (data["transaction_price"]*data["matching_volume"]).sum())
+                            "time").apply(lambda data: (data["transaction_price"]*data["matching_volume"]*is_matching).sum())
                         stock_data_minute["accumulated_middle_price_multiply_volume"] = stock_data.groupby(
-                            "time").apply(lambda data: (data["middle_price"]*data["matching_volume"]).sum())
+                            "time").apply(lambda data: (data["middle_price"]*data["matching_volume"]*is_matching).sum())
 
                         stock_data.drop(
                             columns=["matching_time", "is_matching", "best_ask_tick_number", "best_bid_tick_number", "matching_price_limit_mark", "best_ask_tick_price_limit_mark", "best_bid_tick_price_limit_mark", "momentary_price_movement", "matching_price", "matching_volume"], inplace=True)
@@ -251,10 +252,11 @@ def task(task_table_name):
 
                         stock_data["avg_match_volumn"] = stock_data["total_match_accum_volume"] / \
                             stock_data["total_match_count"]
-                        stock_data["avg_buyer_side_init_match_volume"] = stock_data["buyer_side_init_match_count"] / \
-                            stock_data["buyer_side_init_match_accum_volume"]
-                        stock_data["avg_seller_side_init_match_volume"] = stock_data["seller_side_init_match_count"] / \
-                            stock_data["seller_side_init_match_accum_volume"]
+                        stock_data["avg_buyer_side_init_match_volume"] = stock_data["buyer_side_init_match_accum_volume"] / \
+                            stock_data["buyer_side_init_match_count"]
+
+                        stock_data["avg_seller_side_init_match_volume"] = stock_data["seller_side_init_match_accum_volume"] / \
+                            stock_data["seller_side_init_match_count"]
 
                         stock_data["middle_return_rate"] = np.log(
                             stock_data["middle_price"])-np.log(stock_data["middle_price"].shift(1))
