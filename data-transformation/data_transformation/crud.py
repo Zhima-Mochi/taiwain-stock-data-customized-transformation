@@ -1,8 +1,11 @@
 from aiomysql import IntegrityError
+from data_transformation.settings import Settings
 from databases import Database
 import pandas as pd
 from sqlalchemy import select
 from data_transformation.models import *
+
+settings = Settings()
 
 
 async def get_task_table_names(database: Database):
@@ -14,8 +17,7 @@ async def get_task_table_names(database: Database):
         a.table_name like '%stock_data_%' AND
         ( b.status is null OR 
         b.status != '1');
-        '''
-    stmt = '''
+        ''' if settings.DEBUG==False else '''
         SELECT a.table_name FROM information_schema.tables a
         LEFT JOIN records b ON
         a.table_name = b. table_name
