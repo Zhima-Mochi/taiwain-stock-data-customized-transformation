@@ -4,11 +4,16 @@ from datetime import datetime
 from data_transformation.crud import get_task_table_names
 from data_transformation.database import get_database, engine
 from data_transformation.models import metadata
+from data_transformation.settings import Settings
 from data_transformation.utils import task
 from multiprocessing import Manager, Pool
 
+settings = Settings()
+
 
 async def main():
+    if settings.DEBUG:
+        metadata.drop_all(engine)
     metadata.create_all(engine)
     async with get_database() as database:
         with Manager()as manager:
