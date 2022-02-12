@@ -322,6 +322,6 @@ def sub_task(task_table_name, data_date):
                 # stock_data.replace(np.inf,np.nan,inplace=True)
                 stock_data.to_csv(
                     output_file_path, mode='a', header=not os.path.exists(output_file_path))
-                return f"File finish: {output_file_path.name}"
+        return f"File finish: {output_file_path.name}"
 
     return asyncio.run(async_sub_task())
