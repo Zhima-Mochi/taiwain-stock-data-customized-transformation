@@ -1,6 +1,7 @@
 #!/bin/bash
-BRANCH=$(git rev-parse --symbolic --abbrev-ref $1)
-if [ $BRANCH = "main"]
+BRANCH=$(echo $2 | sed -e "s|origin/||g")
+echo $BRANCH
+if [ $BRANCH = "main" ]
 then
     docker build -t zhima1mochi2/tw-stock-data-transformation data-transformation
     docker push zhima1mochi2/tw-stock-data-transformation
