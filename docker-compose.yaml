@@ -7,5 +7,6 @@ services:
     command: python main.py
     volumes:
       - ./CSV:/app/CSV
+      - /etc/localtime:/etc/localtime
     env_file:
       - ./.env
