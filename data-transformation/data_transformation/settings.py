@@ -1,5 +1,6 @@
 from pydantic import BaseSettings
 import pathlib
+import os
 
 
 class Settings(BaseSettings):
@@ -10,6 +11,7 @@ class Settings(BaseSettings):
     DATABASE_USER: str
     DATABASE_PASSWORD: str
     OUTPUT_PATH: str = pathlib.Path(__file__).parent.resolve()
+    PROCESS_WORKER_NUM: int = os.cpu_count()
 
     class Config:
         env_file = ".env"

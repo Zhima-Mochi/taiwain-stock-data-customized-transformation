@@ -9,7 +9,7 @@ metadata = sqlalchemy.MetaData()
 def create_sa_stock_data_table(table_name: str) -> Table:
     tb = sqlalchemy.Table(
         table_name,
-        metadata,
+        sqlalchemy.MetaData(),
         Column("data_date", Date, primary_key=True),
         Column("stock_id", String(6), primary_key=True),
         Column("matching_time", TIME(fsp=6), primary_key=True),
