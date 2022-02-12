@@ -159,6 +159,7 @@ def sub_task(task_table_name, data_date):
 
     async def async_sub_task():
         async with get_database() as database:
+            
             data = await get_each_date_content_dataframe(
                 database, task_sa_table, data_date)
             output_file_path: Path = output_path / \
@@ -170,6 +171,8 @@ def sub_task(task_table_name, data_date):
             stock_id_list = data["stock_id"].unique()
             # data conversion stock_id by stock_id in a date
             for stock_id in stock_id_list:
+                logger.critical(datetime.datetime.now().ctime()+'1111')
+
                 stock_data = pd.DataFrame(data[bisect_left(data["stock_id"], stock_id):bisect_right(
                     data["stock_id"], stock_id)])
 
@@ -229,7 +232,7 @@ def sub_task(task_table_name, data_date):
                     "is_matching"].sum()
                 stock_data_minute["total_match_accum_volume"] = stock_data.groupby("time")[
                     "matching_volume"].sum()
-
+                logger.critical(datetime.datetime.now().ctime()+'2222')
                 is_matching = data["is_matching"] == 1
                 stock_data_minute["buyer_side_init_match_count"] = stock_data.groupby(
                     "time").apply(lambda data:  ((data["indicator_q"] > 0) & is_matching).sum())
@@ -244,7 +247,7 @@ def sub_task(task_table_name, data_date):
                     "time").apply(lambda data: (data["transaction_price"]*data["matching_volume"]).sum())
                 stock_data_minute["accumulated_middle_price_multiply_volume"] = stock_data.groupby(
                     "time").apply(lambda data: (data["middle_price"]*data["matching_volume"]).sum())
-
+                logger.critical(datetime.datetime.now().ctime()+'3333')
                 stock_data.drop(
                     columns=["matching_time", "is_matching", "best_ask_tick_number", "best_bid_tick_number", "matching_price_limit_mark", "best_ask_tick_price_limit_mark", "best_bid_tick_price_limit_mark", "momentary_price_movement", "matching_price", "matching_volume"], inplace=True)
 

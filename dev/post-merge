@@ -1,4 +1,0 @@
-#!/bin/bash
-
-docker build -t zhima1mochi2/tw-stock-data-transformation data-transformation
-docker push zhima1mochi2/tw-stock-data-transformation
