@@ -17,7 +17,9 @@ async def get_task_table_names():
             LEFT JOIN records b ON
             a.table_name = b. table_name
             WHERE a.table_schema = 'stock_data_storage' AND
-            a.table_name like '%stock_data_%';
+            a.table_name like '%stock_data_%'
+            AND b.status is null 
+            OR b.status = 0;
             '''
         result = await database.fetch_all(query=stmt)
         return [res[0] for res in result]
