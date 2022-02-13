@@ -14,11 +14,9 @@ async def main():
     if settings.DEBUG:
         metadata.drop_all(engine)
     metadata.create_all(engine)
-    async with get_database() as database:
-        task_table_names = list(await get_task_table_names(database))
-        for task_table_name in task_table_names:
-            logger.info(f"{datetime.datetime.now().ctime()}: Finish: {await task(task_table_name)}")
-
+    task_table_names = list(await get_task_table_names())
+    for task_table_name in task_table_names:
+        await task(task_table_name)
 
 if __name__ == '__main__':
     asyncio.run(main())

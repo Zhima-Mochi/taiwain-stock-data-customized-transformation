@@ -131,10 +131,10 @@ async def task(task_table_name):
         logging.warning(e)
     async with get_database() as database:
         # set current table status pending
-        await set_task_table_record_status(database, task_table_name, "0")
+        await set_task_table_record_status(task_table_name, "0")
         try:
             # data conversion date by date in month
-            data_dates = await get_dates_in_month(database, task_sa_table)
+            data_dates = await get_dates_in_month(task_sa_table)
             if len(data_dates) == 0:
                 logger.warning(f"There is no row in {task_table_name}")
                 return "No data: "+task_table_name
@@ -142,16 +142,15 @@ async def task(task_table_name):
                 future_msgs = (executor.submit(
                     sub_task, task_table_name, data_date) for data_date in data_dates)
                 for future_msg in concurrent.futures.as_completed(future_msgs):
-                    print(future_msg)
-                    logger.info(
-                        f"{datetime.datetime.now().ctime()}: {future_msg.result()}")
+                    future_msg.result()
             # set current table status finished
-            await set_task_table_record_status(database, task_table_name, "1")
+            await set_task_table_record_status(task_table_name, "1")
         except Exception as e:
             # set current table status pending
-            await set_task_table_record_status(database, task_table_name, "0")
-            return f"Error: {task_table_name} {e}"
-        return "Finish: "+task_table_name
+            await set_task_table_record_status(task_table_name, "0")
+            logger.error(e)
+            return 1
+        return 0
 
 
 def sub_task(task_table_name, data_date):
@@ -160,8 +159,7 @@ def sub_task(task_table_name, data_date):
     async def async_sub_task():
         async with get_database() as database:
 
-            data = await get_each_date_content_dataframe(
-                database, task_sa_table, data_date)
+            data = await get_each_date_content_dataframe(task_sa_table, data_date)
             output_file_path: Path = output_path / \
                 (task_table_name+'_'+data_date.strftime("%Y%m%d")+".csv")
 
@@ -226,27 +224,31 @@ def sub_task(task_table_name, data_date):
                 stock_data["indicator_q"] = [-1 if stock_data["transaction_price"][i] < stock_data["middle_price"][i]
                                              else 1 if stock_data["transaction_price"][i] > stock_data["middle_price"][i] else 1 if stock_data["transaction_price"][i] > stock_data["previous_transaction_price"][i] else -1 if stock_data["transaction_price"][i] < stock_data["previous_transaction_price"][i] else 0 for i in stock_data.index]
 
-                stock_data_minute = pd.DataFrame()
-                stock_data_minute["total_match_count"] = stock_data.groupby("time")[
-                    "is_matching"].sum()
-                stock_data_minute["total_match_accum_volume"] = stock_data.groupby("time")[
-                    "matching_volume"].sum()
-                
-                stock_data["is_matching_indicator_q"] = stock_data["indicator_q"][stock_data["is_matching"] == 1]
-                stock_data_minute["buyer_side_init_match_count"] = stock_data.groupby(
-                    "time").apply(lambda data:  ((data["is_matching_indicator_q"] > 0)).sum())
-                stock_data_minute["buyer_side_init_match_accum_volume"] = stock_data.groupby(
-                    "time").apply(lambda data: data["matching_volume"][(data["is_matching_indicator_q"] > 0)].sum())
+                try:
+                    stock_data_minute = pd.DataFrame()
+                    stock_data_minute["total_match_count"] = stock_data.groupby("time")[
+                        "is_matching"].sum()
+                    stock_data_minute["total_match_accum_volume"] = stock_data.groupby("time")[
+                        "matching_volume"].sum()
 
-                stock_data_minute["seller_side_init_match_count"] = stock_data.groupby(
-                    "time").apply(lambda data:  ((data["is_matching_indicator_q"] < 0)).sum())
-                stock_data_minute["seller_side_init_match_accum_volume"] = stock_data.groupby(
-                    "time").apply(lambda data: data["matching_volume"][(data["is_matching_indicator_q"] < 0)].sum())
-                stock_data_minute["accumulated_matching_price_multiply_volume"] = stock_data.groupby(
-                    "time").apply(lambda data: (data["transaction_price"]*data["matching_volume"]).sum())
-                stock_data_minute["accumulated_middle_price_multiply_volume"] = stock_data.groupby(
-                    "time").apply(lambda data: (data["middle_price"]*data["matching_volume"]).sum())
-                    
+                    stock_data["is_matching_indicator_q"] = stock_data["indicator_q"][stock_data["is_matching"] == 1]
+                    stock_data_minute["buyer_side_init_match_count"] = stock_data.groupby(
+                        "time").apply(lambda data:  ((data["is_matching_indicator_q"] > 0)).sum())
+                    stock_data_minute["buyer_side_init_match_accum_volume"] = stock_data.groupby(
+                        "time").apply(lambda data: data["matching_volume"][(data["is_matching_indicator_q"] > 0)].sum())
+
+                    stock_data_minute["seller_side_init_match_count"] = stock_data.groupby(
+                        "time").apply(lambda data:  ((data["is_matching_indicator_q"] < 0)).sum())
+                    stock_data_minute["seller_side_init_match_accum_volume"] = stock_data.groupby(
+                        "time").apply(lambda data: data["matching_volume"][(data["is_matching_indicator_q"] < 0)].sum())
+                    stock_data_minute["accumulated_matching_price_multiply_volume"] = stock_data.groupby(
+                        "time").apply(lambda data: (data["transaction_price"]*data["matching_volume"]).sum())
+                    stock_data_minute["accumulated_middle_price_multiply_volume"] = stock_data.groupby(
+                        "time").apply(lambda data: (data["middle_price"]*data["matching_volume"]).sum())
+                except Exception as e:
+                    logger.error(f"In stock_data_miniute process: {e}")
+                    return 1
+
                 stock_data.drop(
                     columns=["matching_time", "is_matching", "best_ask_tick_number", "best_bid_tick_number", "matching_price_limit_mark", "best_ask_tick_price_limit_mark", "best_bid_tick_price_limit_mark", "momentary_price_movement", "matching_price", "matching_volume"], inplace=True)
 
@@ -324,6 +326,6 @@ def sub_task(task_table_name, data_date):
                 # stock_data.replace(np.inf,np.nan,inplace=True)
                 stock_data.to_csv(
                     output_file_path, mode='a', header=not os.path.exists(output_file_path))
-        return f"File finish: {output_file_path.name}"
-
+        logger.critical(f"File finish: {output_file_path.name}")
+        return 0
     return asyncio.run(async_sub_task())
