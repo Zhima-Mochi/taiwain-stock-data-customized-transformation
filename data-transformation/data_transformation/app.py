@@ -16,6 +16,7 @@ async def main():
     metadata.create_all(engine)
     task_table_names = list(await get_task_table_names())
     for task_table_name in task_table_names:
+        logger.critical(f"Start: {task_table_name}")
         await task(task_table_name)
 
 if __name__ == '__main__':
