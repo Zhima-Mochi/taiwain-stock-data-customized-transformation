@@ -68,6 +68,8 @@ import datetime
 import os
 from pathlib import Path
 import concurrent.futures
+
+from sqlalchemy import false
 np.seterr(divide='ignore')
 
 stock_start_time = datetime.time(8, 30)
@@ -142,7 +144,12 @@ async def task(task_table_name):
                 future_msgs = (executor.submit(
                     sub_task, task_table_name, data_date) for data_date in data_dates)
                 for future_msg in concurrent.futures.as_completed(future_msgs):
-                    future_msg.result()
+                    if future_msg.result():
+                        for future_msg in future_msgs:
+                            future_msg.cancel()
+                        executor.shutdown()
+                        raise Exception(f"Failure: {task_table_name}")
+
             # set current table status finished
             await set_task_table_record_status(task_table_name, "1")
         except Exception as e:
@@ -247,7 +254,9 @@ def sub_task(task_table_name, data_date):
                         "time").apply(lambda data: (data["middle_price"]*data["matching_volume"]).sum())
                 except Exception as e:
                     logger.error(f"In stock_data_miniute process: {e}")
-                    return 1
+                    stock_data_minute = pd.DataFrame(columns=["total_match_count", "total_match_accum_volume", "buyer_side_init_match_count", "buyer_side_init_match_accum_volume",
+                                                     "seller_side_init_match_count", "seller_side_init_match_accum_volume", "accumulated_matching_price_multiply_volume", "accumulated_middle_price_multiply_volume"])
+                    # return 1
 
                 stock_data.drop(
                     columns=["matching_time", "is_matching", "best_ask_tick_number", "best_bid_tick_number", "matching_price_limit_mark", "best_ask_tick_price_limit_mark", "best_bid_tick_price_limit_mark", "momentary_price_movement", "matching_price", "matching_volume"], inplace=True)
